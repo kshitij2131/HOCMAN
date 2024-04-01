@@ -1,18 +1,35 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import DocumentPicker from 'react-native-document-picker';
 import storage from '@react-native-firebase/storage';
+import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import {Picker} from '@react-native-picker/picker';
 
-const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler',
-'Geyser', 'Construction', 'Equipments', 'Others'];
+const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others'];
 
 const AddComplaintScreen = () => {
   const [type, setType] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState(null);
+  const [imageUri, setImageUri] = useState('');
+  const [imageData, setImageData]= useState('');
+  const [fullImgRefPath, setFullImgRefPath] = useState('');
+  const [imgDownloadUrl, setImgDownloadUrl] = useState('');
+
+  const handlePickImage = async () => {
+    try {
+      const response = await DocumentPicker.pickSingle({
+        type: [DocumentPicker.types.images],
+        copyTo: 'cachesDirectory'
+      });
+      setImageData(response);
+      setImageUri(response.uri);
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleAddComplaint = async () => {
     try {
@@ -21,15 +38,27 @@ const AddComplaintScreen = () => {
         throw new Error('Type and Location are required fields.');
       }
 
-      // Upload image if available
-//      let imageUrl = '';
-//      if (image) {
-//        const uploadUri = image;
-//        const filename = uploadUri.substring(uploadUri.lastIndexOf('/') + 1);
-//        const storageRef = storage().ref(`images/${filename}`);
-//        await storageRef.putFile(uploadUri);
-//        imageUrl = await storageRef.getDownloadURL();
-//      }
+      const uploadImage = async () => {
+          try {
+            const response = storage().ref(`/complaintImage/${imageData.name}`);
+//            console.log(response);
+            const put = await response.putFile(imageData.fileCopyUri);
+//            console.log(put);
+
+            setFullImgRefPath(put.metadata.fullPath);
+            const url = await response.getDownloadURL();
+
+            setImgDownloadUrl(url);
+
+            console.log(ImgDownloadUrl);
+
+            alert('Image Uploaded Successfully');
+          } catch (err) {
+            console.log(err);
+          }
+        };
+
+       uploadImage();
 
       // Add complaint to Firebase database
       const userId = auth().currentUser.uid;
@@ -39,6 +68,7 @@ const AddComplaintScreen = () => {
         type,
         location,
         description,
+        imgDownloadUrl,
         status: 'pending',
         userId,
         createdAt: currentDate,
@@ -48,7 +78,7 @@ const AddComplaintScreen = () => {
       setType('');
       setLocation('');
       setDescription('');
-      setImage(null);
+      setImageUri('');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -81,6 +111,13 @@ const AddComplaintScreen = () => {
       />
       <TouchableOpacity
         style={styles.button}
+        onPress={handlePickImage}
+      >
+        <Text style={styles.buttonText}>Select Image</Text>
+      </TouchableOpacity>
+      {imageUri? <Image source={{ uri: imageUri }} style={styles.image} /> : null}
+      <TouchableOpacity
+        style={styles.button}
         onPress={handleAddComplaint}
       >
         <Text style={styles.buttonText}>Add Complaint</Text>
@@ -106,10 +143,16 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
+    marginBottom: 10,
   },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  image: {
+    width: 200,
+    height: 200,
+    marginBottom: 10,
   },
 });
 
