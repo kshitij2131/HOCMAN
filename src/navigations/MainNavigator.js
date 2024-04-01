@@ -40,6 +40,12 @@ function MainNavigator() {
           component={HomeScreen}
           options={{headerShown: false}}
         />
+
+        <Stack.Screen
+                  name="AddComplaint"
+                  component={AddComplaint}
+                  options={{headerShown: false}}
+                />
       </Stack.Navigator>
     </NavigationContainer>
   );

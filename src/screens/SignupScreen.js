@@ -68,7 +68,7 @@ export default function SignupScreen() {
           console.log(isUserCreated);
 
           const addUser = async () => {
-            firestore().collection('users').doc(isUserCreated.uid).set({
+            firestore().collection('users').doc(isUserCreated.user.uid).set({
               name,
               rollNo,
               hostelName,
