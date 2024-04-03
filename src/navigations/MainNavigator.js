@@ -11,6 +11,7 @@ import SplashScreen from '../screens/SplashScreen';
 import AddComplaint from '../screens/AddComplaint';
 import ReviewComplaint from '../screens/ReviewComplaint';
 import UpdateHostelDetails from '../screens/UpdateHostelDetails';
+import FullComplaint from '../screens/FullComplaint';
 
 const Stack = createNativeStackNavigator();
 
@@ -46,6 +47,17 @@ function MainNavigator() {
                   component={AddComplaint}
                   options={{headerShown: false}}
                 />
+        <Stack.Screen
+                          name="ReviewComplaint"
+                          component={ReviewComplaint}
+                          options={{headerShown: false}}
+                        />
+       <Stack.Screen
+                                 name="FullComplaint"
+                                 component={FullComplaint}
+                                 options={{headerShown: false}}
+                               />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

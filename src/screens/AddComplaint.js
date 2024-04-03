@@ -50,7 +50,7 @@ const AddComplaintScreen = () => {
 
             setImgDownloadUrl(url);
 
-            console.log(ImgDownloadUrl);
+            console.log(imgDownloadUrl);
 
             alert('Image Uploaded Successfully');
           } catch (err) {
