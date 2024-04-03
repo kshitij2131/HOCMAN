@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import DocumentPicker from 'react-native-document-picker';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 
+const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Other', 'None'];
+const statuses = ['done', 'pending', 'None'];
 
 const ViewComplaintsScreen = () => {
   const [complaints, setComplaints] = useState([]);
+  const [filteredComplaints, setFilteredComplaints] = useState([]);
+  const [filterOptions, setFilterOptions] = useState({ date: '', type: 'None', status: 'None' });
+  const [type, setType] = useState('');
+  const [date, setDate] = useState('');
+  const [status, setStatus] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -20,6 +29,7 @@ const ViewComplaintsScreen = () => {
       const snapshot = await complaintsRef.get();
       const complaintList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setComplaints(complaintList);
+      applyFilters(complaintList);
     } catch (error) {
       console.error('Error fetching complaints: ', error);
     }
@@ -39,7 +49,7 @@ const ViewComplaintsScreen = () => {
   };
 
   const handleViewFullComplaint = (complaint) => {
-    navigation.navigate('FullComplaint', { complaint });
+    navigation.navigate('FullComplaint', {complaint});
   };
 
   const renderItem = ({ item }) => (
@@ -62,13 +72,55 @@ const ViewComplaintsScreen = () => {
     </View>
   );
 
+  const applyFilters = (data) => {
+    let filteredData = [...data];
+    if (filterOptions.type !== 'None') {
+      filteredData = filteredData.filter(complaint => complaint.type === filterOptions.type);
+    }
+    if (filterOptions.status !== 'None') {
+      filteredData = filteredData.filter(complaint => complaint.status === filterOptions.status);
+    }
+    setFilteredComplaints(filteredData);
+  };
+
   return (
     <View style={styles.container}>
-    <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
-                    Your Complaints
-                  </Text>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
+        Your Complaints
+      </Text>
+      <View>
+        {/* Type Filter */}
+        <Picker
+          style={styles.inputBox}
+          selectedValue={filterOptions.type}
+          onValueChange={(value) => setFilterOptions({ ...filterOptions, type: value })
+          }
+        >
+          {types.map((type, index) => (
+            <Picker.Item key={index} label={type} value={type} />
+          ))}
+        </Picker>
+
+        {/* Status Filter */}
+        <Picker
+          style={styles.inputBox}
+          selectedValue={filterOptions.status}
+          onValueChange={(value) => setFilterOptions({ ...filterOptions, status: value })}
+        >
+          {statuses.map((status, index) => (
+            <Picker.Item key={index} label={status} value={status} />
+          ))}
+        </Picker>
+        <TouchableOpacity
+                        style={styles.applyFiltersButton}
+                        onPress={() => applyFilters(complaints)}
+                      >
+                        <Text style={styles.buttonText}>Apply filter</Text>
+                </TouchableOpacity>
+      </View>
+
       <FlatList
-        data={complaints}
+        data={filteredComplaints}
         renderItem={renderItem}
         keyExtractor={item => item.id}
       />
@@ -102,9 +154,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
+  applyFiltersButton:{
+    backgroundColor: 'red',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 30
+  },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  inputBox: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
   },
 });
 
