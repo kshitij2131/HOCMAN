@@ -1,47 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, TextInput } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import firestore from '@react-native-firebase/firestore';
 
 const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others', 'None'];
 const statuses = ['done', 'pending', 'None'];
 
 const ViewComplaintsScreen = () => {
-  const navigation = useNavigation();
-
   const [complaints, setComplaints] = useState([]);
   const [filteredComplaints, setFilteredComplaints] = useState([]);
-  const [filterOptions, setFilterOptions] = useState({
-    fromDate: new Date(2024, 3, 1),
-    toDate: new Date(),
-    type: 'None',
-    status: 'None'
-  });
-  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
-  const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [filterOptions, setFilterOptions] = useState({ type: 'None', status: 'None' });
+  const [rollNoFilter, setRollNoFilter] = useState('');
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchComplaints();
   }, []);
 
-  const fetchComplaints = async () => {
-    try {
-      const userId = auth().currentUser.uid;
-      const complaintsRef = firestore().collection(`users/${userId}/complaints`);
-      const snapshot = await complaintsRef.get();
-      const complaintList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setComplaints(complaintList);
-      applyFilters(complaintList);
-    } catch (error) {
-      console.error('Error fetching complaints: ', error);
-    }
-  };
+const fetchComplaints = async () => {
+  try {
+    const adminId = auth().currentUser.uid;
+    const adminRef = firestore().collection('admins').doc(adminId);
+    const adminDoc = await adminRef.get();
+    const adminData = adminDoc.data();
+    const hostel = adminData.hostel;
+    const allComplaints = [];
 
-  const handleUpdateStatus = (complaintId) => {
-    const userId = auth().currentUser.uid;
+    const usersRef = firestore().collection('users').where('hostelName', '==', hostel);
+    usersRef.get().then(querySnapshot => {
+      const userPromises = [];
+      querySnapshot.forEach(userDoc => {
+        const userId = userDoc.id;
+        const complaintsRef = firestore().collection(`users/${userId}/complaints`);
+        const userPromise = complaintsRef.get().then(complaintsSnapshot => {
+          const userComplaints = complaintsSnapshot.docs.map(doc => {
+            const complaintData = doc.data();
+            return {
+              id: doc.id,
+              ...complaintData,
+              complaintUserId: userId,
+              userName: userDoc.data().name,
+              userRollNo: userDoc.data().rollNo,
+            };
+          });
+          allComplaints.push(...userComplaints);
+        });
+        userPromises.push(userPromise);
+      });
+
+      Promise.all(userPromises).then(() => {
+        setComplaints(allComplaints);
+        applyFilters(allComplaints);
+      });
+    }).catch(error => {
+      console.error('Error fetching users: ', error);
+    });
+
+  } catch (error) {
+    console.error('Error fetching complaints: ', error);
+  }
+};
+
+
+  const handleUpdateStatus = (complaintId, userId) => {
     Alert.alert(
       'Confirmation',
       'Do you want to mark this complaint as "done"?',
@@ -69,9 +92,34 @@ const ViewComplaintsScreen = () => {
     }
   };
 
+
   const handleViewFullComplaint = (complaint) => {
     navigation.navigate('FullComplaint', { complaint });
   };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.complaintItem}>
+      <Text>Name: {item.userName}</Text>
+      <Text>Roll No: {item.userRollNo}</Text>
+      <Text>Date: {item.createdAt}</Text>
+      <Text>Type: {item.type}</Text>
+      <Text>Status: {item.status}</Text>
+      {item.status !== 'done' ? (
+            <TouchableOpacity
+              style={styles.updateButton}
+              onPress={() => handleUpdateStatus(item.id, item.complaintUserId)}
+            >
+              <Text style={styles.buttonText}>Mark as Done</Text>
+            </TouchableOpacity>
+          ) : null}
+      <TouchableOpacity
+        style={styles.viewFullButton}
+        onPress={() => handleViewFullComplaint(item)}
+      >
+        <Text style={styles.buttonText}>View Full Complaint</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   const applyFilters = (data) => {
     let filteredData = [...data];
@@ -81,51 +129,18 @@ const ViewComplaintsScreen = () => {
     if (filterOptions.status !== 'None') {
       filteredData = filteredData.filter(complaint => complaint.status === filterOptions.status);
     }
-    filteredData = filteredData.filter(complaint => {
-      const complaintDate = new Date(complaint.createdAt);
-      console.log(filterOptions.toDate);
-      console.log(filterOptions.fromDate);
-      return complaintDate >= filterOptions.fromDate && complaintDate <= filterOptions.toDate;
-    });
+    if (rollNoFilter !== '') {
+      filteredData = filteredData.filter(complaint => complaint.userRollNo.toLowerCase() === rollNoFilter.toLowerCase());
+    }
     setFilteredComplaints(filteredData);
   };
 
-  const handleFromDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || filterOptions.fromDate;
-    setShowFromDatePicker(false);
-    setFilterOptions({ ...filterOptions, fromDate: currentDate });
-  };
-
-  const handleToDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || filterOptions.toDate;
-    setShowToDatePicker(false);
-    setFilterOptions({ ...filterOptions, toDate: currentDate });
-  };
-    const renderItem = ({ item }) => (
-      <View style={styles.complaintItem}>
-        <Text>Date: {item.createdAt}</Text>
-        <Text>Type: {item.type}</Text>
-        <Text>Status: {item.status}</Text>
-        {item.status !== 'done' ? (
-          <TouchableOpacity
-            style={styles.updateButton}
-            onPress={() => handleUpdateStatus(item.id)}
-          >
-            <Text style={styles.buttonText}>Mark as Done</Text>
-          </TouchableOpacity>
-        ) : null}
-        <TouchableOpacity
-          style={styles.viewFullButton}
-          onPress={() => handleViewFullComplaint(item)}
-        >
-          <Text style={styles.buttonText}>View Full Complaint</Text>
-        </TouchableOpacity>
-      </View>
-    );
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Your Complaints</Text>
-      <View>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
+        Complaints from Your Hostel
+      </Text>
+      <View style={{ marginBottom: 20 }}>
         {/* Type Filter */}
         <Picker
           style={styles.inputBox}
@@ -148,37 +163,13 @@ const ViewComplaintsScreen = () => {
           ))}
         </Picker>
 
-        {/* From Date Picker */}
-        <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={() => setShowFromDatePicker(true)}
-        >
-          <Text>{`From Date: ${filterOptions.fromDate.toLocaleDateString()}`}</Text>
-        </TouchableOpacity>
-        {showFromDatePicker && (
-          <DateTimePicker
-            value={filterOptions.fromDate}
-            mode="date"
-            display="default"
-            onChange={handleFromDateChange}
-          />
-        )}
-
-        {/* To Date Picker */}
-        <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={() => setShowToDatePicker(true)}
-        >
-          <Text>{`To Date: ${filterOptions.toDate.toLocaleDateString()}`}</Text>
-        </TouchableOpacity>
-        {showToDatePicker && (
-          <DateTimePicker
-            value={filterOptions.toDate}
-            mode="date"
-            display="default"
-            onChange={handleToDateChange}
-          />
-        )}
+        {/* Roll No Filter */}
+        <TextInput
+          style={styles.inputBox}
+          placeholder="Enter Roll No"
+          value={rollNoFilter}
+          onChangeText={(value) => setRollNoFilter(value)}
+        />
 
         <TouchableOpacity
           style={styles.applyFiltersButton}
@@ -241,14 +232,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
-  },
-  datePickerButton: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    alignItems: 'center',
   },
 });
 

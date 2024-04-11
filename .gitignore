@@ -43,6 +43,8 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+jdk-17.0.10
+
 # fastlane
 #
 # It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the

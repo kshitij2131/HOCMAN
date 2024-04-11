@@ -3,9 +3,6 @@ import { View, Text, StyleSheet, Image } from 'react-native';
 
 const FullComplaintScreen = ({ route }) => {
   const { complaint } = route.params;
-  console.log(complaint.imgDownloadUrl);
-  const base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAAAzCAYAAAA6oTAqAAAAEXRFWHRTb2Z0d2FyZQBwbmdjcnVzaEB1SfMAAABQSURBVGje7dSxCQBACARB+2/ab8BEeQNhFi6WSYzYLYudDQYGBgYGBgYGBgYGBgYGBgZmcvDqYGBgmhivGQYGBgYGBgYGBgYGBgYGBgbmQw+P/eMrC5UTVAAAAABJRU5ErkJggg==';
-
 
   return (
     <View style={styles.container}>
@@ -14,22 +11,44 @@ const FullComplaintScreen = ({ route }) => {
       <Text>Location: {complaint.location}</Text>
       <Text>Description: {complaint.description}</Text>
       <Text>Status: {complaint.status}</Text>
-
-     <Image
-       source={{ uri: base64Image }}
-
-       onError={(error) => console.log('Image error:', error)}
-     />
-
-     </View>
+      <View style={styles.imageContainer}>
+        {complaint.imgDownloadUrl ? (
+          <>
+            <Text style={styles.label}>Image for the Complaint</Text>
+            <Image
+              style={{
+                width: '100%',
+                height: 400
+              }}
+              source={{ uri: complaint.imgDownloadUrl }}
+            />
+          </>
+        ) : (
+          <Text style={styles.label}>No image Uploaded</Text>
+        )}
+      </View>
+    </View>
   );
 };
+
+export default FullComplaintScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  imageContainer: {
+    width: '100%',
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  label: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 5
+  }
 });
-
-export default FullComplaintScreen;

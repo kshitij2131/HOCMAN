@@ -9,21 +9,16 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
-        Student Dashboard
+        Admin Dashboard
       </Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('AddComplaint')}>
-        <Text style={styles.buttonText}>Add Complaint</Text>
+        onPress={() => navigation.navigate('ReviewComplaintAdmin')}>
+        <Text style={styles.buttonText}>Review Complaints</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('ReviewComplaint')}>
-        <Text style={styles.buttonText}>Review Complaint</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('UpdateProfile')}>
+        onPress={() => navigation.navigate('UpdateProfileAdmin')}>
         <Text style={styles.buttonText}>Update Profile</Text>
       </TouchableOpacity>
       <TouchableOpacity

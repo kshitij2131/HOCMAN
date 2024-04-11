@@ -7,11 +7,14 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SignupScreen from '../screens/SignupScreen';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
+import HomeScreenAdmin from '../screens/HomeScreenAdmin';
 import SplashScreen from '../screens/SplashScreen';
 import AddComplaint from '../screens/AddComplaint';
 import ReviewComplaint from '../screens/ReviewComplaint';
-import UpdateHostelDetails from '../screens/UpdateHostelDetails';
+import ReviewComplaintAdmin from '../screens/ReviewComplaintAdmin';
+import UpdateProfile from '../screens/UpdateProfile';
 import FullComplaint from '../screens/FullComplaint';
+import UpdateProfileAdmin from '../screens/UpdateProfileAdmin';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,22 +44,41 @@ function MainNavigator() {
           component={HomeScreen}
           options={{headerShown: false}}
         />
-
         <Stack.Screen
-                  name="AddComplaint"
-                  component={AddComplaint}
-                  options={{headerShown: false}}
-                />
+          name="HomeAdmin"
+          component={HomeScreenAdmin}
+          options={{headerShown: false}}
+        />
         <Stack.Screen
-                          name="ReviewComplaint"
-                          component={ReviewComplaint}
-                          options={{headerShown: false}}
-                        />
+          name="AddComplaint"
+          component={AddComplaint}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="ReviewComplaint"
+          component={ReviewComplaint}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="ReviewComplaintAdmin"
+          component={ReviewComplaintAdmin}
+          options={{headerShown: false}}
+        />
        <Stack.Screen
-                                 name="FullComplaint"
-                                 component={FullComplaint}
-                                 options={{headerShown: false}}
-                               />
+         name="FullComplaint"
+         component={FullComplaint}
+         options={{headerShown: false}}
+       />
+       <Stack.Screen
+         name="UpdateProfile"
+         component={UpdateProfile}
+         options={{headerShown: false}}
+       />
+       <Stack.Screen
+         name="UpdateProfileAdmin"
+         component={UpdateProfileAdmin}
+         options={{headerShown: false}}
+       />
 
       </Stack.Navigator>
     </NavigationContainer>
