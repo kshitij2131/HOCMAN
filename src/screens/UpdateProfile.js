@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 import { useNavigation, StackActions } from '@react-navigation/native';
 
 const hostels = [
@@ -26,7 +26,6 @@ const hostels = [
 ];
 
 const UpdateProfile = () => {
-
   const navigation = useNavigation();
 
   const [password1, setPassword1] = useState('');
@@ -49,20 +48,19 @@ const UpdateProfile = () => {
   };
 
   const handleUpdateProfile = async () => {
-  try{
-    await auth().signInWithEmailAndPassword(auth().currentUser.email, password2);
-    const roomNumber = parseInt(newRoomNo);
-    if (isNaN(roomNumber) || roomNumber < 100 || roomNumber > 400) {
-      Alert.alert('Error', 'Room number must be an integer in the range 100-400.');
-      return;
-    }
-
-    if (newHostel == "") {
-      Alert.alert('Error', 'Invalid hostel name. Please select from the provided options.');
-      return;
-    }
-
     try {
+      await auth().signInWithEmailAndPassword(auth().currentUser.email, password2);
+      const roomNumber = parseInt(newRoomNo);
+      if (isNaN(roomNumber) || roomNumber < 100 || roomNumber > 400) {
+        Alert.alert('Error', 'Room number must be an integer in the range 100-400.');
+        return;
+      }
+
+      if (newHostel == "") {
+        Alert.alert('Error', 'Invalid hostel name. Please select from the provided options.');
+        return;
+      }
+
       const userId = auth().currentUser.uid;
       await firestore().collection('users').doc(userId).update({
         hostelName: newHostel,
@@ -74,19 +72,14 @@ const UpdateProfile = () => {
       console.error('Error updating profile: ', error);
       Alert.alert('Error', 'Failed to update profile. Please try again later.');
     }
-  } catch(error){
-      console.error('Error updating password: ', error);
-      Alert.alert('Error', 'Failed to update password. Please check your current password.');
-  }
-
   };
-
 
   return (
     <View style={styles.container}>
-      <Text>Update Password:</Text>
+      <Text style={styles.heading}>Update Password:</Text>
       <TextInput
         style={styles.input}
+        placeholderTextColor="#FFFFFF"
         placeholder="Current Password"
         secureTextEntry
         value={password1}
@@ -94,40 +87,46 @@ const UpdateProfile = () => {
       />
       <TextInput
         style={styles.input}
+        placeholderTextColor="#FFFFFF"
         placeholder="New Password"
         secureTextEntry
         value={newPassword}
         onChangeText={setNewPassword}
       />
-      <Button title="Update Password" onPress={handleUpdatePassword} />
+      <TouchableOpacity onPress={handleUpdatePassword} style={[styles.button, { width: '45%' }]}>
+        <Text style={styles.buttonText}>Update Password</Text>
+      </TouchableOpacity>
 
-      <Text style={styles.section}>Update Hostel and Room Number:</Text>
+      <Text style={[styles.heading,{marginTop: 60}]}>Update Hostel and Room Number</Text>
+      <Picker
+        style={styles.picker}
+        selectedValue={newHostel}
+        onValueChange={(value) => setNewHostel(value)}
+      >
+        <Picker.Item label="Select Hostel" value="" />
+        {hostels.map((hostel, index) => (
+          <Picker.Item key={index} label={hostel.label} value={hostel.value} />
+        ))}
+      </Picker>
       <TextInput
         style={styles.input}
-        placeholder="Current Password"
-        secureTextEntry
-        value={password2}
-        onChangeText={setPassword2}
-       />
-      <Text>Hostel Name:</Text>
-        <Picker
-          style = {styles.picker}
-          selectedValue={newHostel}
-          onValueChange={(value) => setNewHostel(value)}
-        >
-          <Picker.Item label="Select Hostel" value=""/>
-          {hostels.map((hostel, index) => (
-            <Picker.Item key={index} label={hostel.label} value={hostel.value} />
-          ))}
-        </Picker>
-      <TextInput
-        style={styles.input}
-        placeholder="Room Number"
+        placeholderTextColor="#FFFFFF"
+        placeholder="Enter room number"
         keyboardType="numeric"
         value={newRoomNo}
         onChangeText={setNewRoomNo}
       />
-      <Button title="Update Profile" onPress={handleUpdateProfile} />
+      <TextInput
+              style={styles.input}
+              placeholderTextColor="#FFFFFF"
+              placeholder="Enter Password"
+              secureTextEntry
+              value={password2}
+              onChangeText={setPassword2}
+            />
+      <TouchableOpacity onPress={handleUpdateProfile} style={[styles.button, { width: '45%' }]}>
+        <Text style={styles.buttonText}>Update Profile</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -136,6 +135,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#212121', // Dark background color
+  },
+  heading: {
+    color: '#FFFFFF', // White text color
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  label: {
+    color: '#FFFFFF', // White text color
+    marginBottom: 5,
   },
   input: {
     borderWidth: 1,
@@ -143,17 +153,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
-  },
-  section: {
-    marginTop: 20,
-    marginBottom: 10,
-    fontWeight: 'bold',
+    color: '#FFFFFF', // White text color
+    backgroundColor: '#424242', // Dark gray background color
   },
   picker: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 10,
+    color: '#FFFFFF', // White text color
+    backgroundColor: '#424242', // Dark gray background color
+  },
+  button: {
+    borderRadius: 20,
+    alignSelf: 'center', // Align to center horizontally
+    backgroundColor: '#009688', // Button color
+    padding: 10,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#FFFFFF', // White text color
+    textAlign: 'center',
   },
 });
 

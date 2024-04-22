@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert,TouchableOpacity } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import {Picker} from '@react-native-picker/picker';
@@ -76,10 +76,11 @@ const UpdateProfile = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Update Password:</Text>
+      <Text style={styles.heading}>Update Password</Text>
       <TextInput
         style={styles.input}
         placeholder="Current Password"
+        placeholderTextColor="#FFFFFF" // White placeholder text color
         secureTextEntry
         value={password1}
         onChangeText={setPassword1}
@@ -87,32 +88,37 @@ const UpdateProfile = () => {
       <TextInput
         style={styles.input}
         placeholder="New Password"
+        placeholderTextColor="#FFFFFF" // White placeholder text color
         secureTextEntry
         value={newPassword}
         onChangeText={setNewPassword}
       />
-      <Button title="Update Password" onPress={handleUpdatePassword} />
+      <TouchableOpacity onPress={handleUpdatePassword} style={[styles.button, { width: '45%' }]}>
+              <Text style={styles.buttonText}>Update Password</Text>
+            </TouchableOpacity>
 
-      <Text style={styles.section}>Update Hostel and Room Number:</Text>
+      <Text style={[styles.heading,{marginTop: 40}]}>Update Hostel Name</Text>
+      <Picker
+        style={styles.picker}
+        selectedValue={newHostel}
+        onValueChange={(value) => setNewHostel(value)}
+      >
+        <Picker.Item label="Select Hostel" value="" />
+        {hostels.map((hostel, index) => (
+          <Picker.Item key={index} label={hostel.label} value={hostel.value} />
+        ))}
+      </Picker>
       <TextInput
         style={styles.input}
-        placeholder="Current Password"
+        placeholder="Enter Password"
+        placeholderTextColor="#FFFFFF" // White placeholder text color
         secureTextEntry
         value={password2}
         onChangeText={setPassword2}
-       />
-      <Text>Hostel Name:</Text>
-        <Picker
-          style = {styles.picker}
-          selectedValue={newHostel}
-          onValueChange={(value) => setNewHostel(value)}
-        >
-          <Picker.Item label="Select Hostel" value=""/>
-          {hostels.map((hostel, index) => (
-            <Picker.Item key={index} label={hostel.label} value={hostel.value} />
-          ))}
-        </Picker>
-      <Button title="Update Profile" onPress={handleUpdateProfile} />
+      />
+      <TouchableOpacity onPress={handleUpdateProfile} style={[styles.button, { width: '45%' }]}>
+              <Text style={styles.buttonText}>Update Profile</Text>
+            </TouchableOpacity>
     </View>
   );
 };
@@ -121,6 +127,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#212121', // Dark background color
+  },
+  heading: {
+    color: '#FFFFFF', // White text color
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
@@ -128,18 +141,28 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
-  },
-  section: {
-    marginTop: 20,
-    marginBottom: 10,
-    fontWeight: 'bold',
+    color: '#FFFFFF', // White text color
+    backgroundColor: '#424242', // Dark gray background color
   },
   picker: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 10,
+    color: '#FFFFFF', // White text color
+    backgroundColor: '#424242', // Dark gray background color
   },
+  button: {
+      borderRadius: 20,
+      alignSelf: 'center', // Align to center horizontally
+      backgroundColor: '#009688', // Button color
+      padding: 10,
+      marginTop: 10,
+    },
+  buttonText: {
+      color: '#FFFFFF', // White text color
+      textAlign: 'center',
+    },
 });
 
 export default UpdateProfile;

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
@@ -26,7 +25,6 @@ const AddComplaintScreen = () => {
       });
       setImageData(response);
       setImageUri(response.uri);
-      console.log(response);
     } catch (err) {
       console.log(err);
     }
@@ -34,7 +32,6 @@ const AddComplaintScreen = () => {
 
   const handleAddComplaint = async () => {
     try {
-      // Validate required fields
       if (!type || !location) {
         throw new Error('Type and Location are required fields.');
       }
@@ -48,10 +45,7 @@ const AddComplaintScreen = () => {
           const url = await response.getDownloadURL();
 
           setImgDownloadUrl(url);
-
-          console.log(imgDownloadUrl);
-
-          alert('Image Uploaded Successfully');
+          Alert.alert('Success', 'Image Uploaded Successfully');
         } catch (err) {
           console.log(err);
         }
@@ -59,7 +53,6 @@ const AddComplaintScreen = () => {
 
       uploadImage();
 
-      // Add complaint to Firebase database
       const userId = auth().currentUser.uid;
       const currentDate = new Date().toISOString();
       const complaintRef = firestore().collection(`users/${userId}/complaints`).doc();
@@ -89,7 +82,7 @@ const AddComplaintScreen = () => {
       <Picker
         selectedValue={type}
         onValueChange={(value) => setType(value)}
-        style={styles.picker}
+        style={styles.input}
       >
         <Picker.Item label="Select Type" value="" />
         {types.map((type, index) => (
@@ -113,7 +106,7 @@ const AddComplaintScreen = () => {
         style={styles.button}
         onPress={handlePickImage}
       >
-        <Text style={styles.buttonText}>Select Image</Text>
+        <Text style={styles.buttonText}>Choose Image</Text>
       </TouchableOpacity>
       {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
       <TouchableOpacity
@@ -137,14 +130,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', // White text color
     marginBottom: 5,
   },
-  picker: {
-    width: '100%',
-    backgroundColor: '#424242', // Dark gray background color
-    color: '#FFFFFF', // White text color
-    borderRadius: 5,
-    marginBottom: 10,
-  },
   input: {
+    width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
@@ -158,7 +145,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: '#2196F3', // Blue button color
+    backgroundColor: '#009688', // Blue button color
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -176,6 +163,7 @@ const styles = StyleSheet.create({
 });
 
 export default AddComplaintScreen;
+
 
 
 //import React, { useState } from 'react';

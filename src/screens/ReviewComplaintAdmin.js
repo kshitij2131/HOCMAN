@@ -4,14 +4,19 @@ import { Picker } from '@react-native-picker/picker';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others', 'None'];
-const statuses = ['done', 'pending', 'None'];
+const types = ['Select Type', 'AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others'];
+const statuses = ['Select Status', 'done', 'pending'];
 
 const ViewComplaintsScreen = () => {
   const [complaints, setComplaints] = useState([]);
   const [filteredComplaints, setFilteredComplaints] = useState([]);
-  const [filterOptions, setFilterOptions] = useState({ type: 'None', status: 'None' });
+  const [filterOptions, setFilterOptions] = useState({ type: 'Select Type', status: 'Select Status' });
+  const [showFromDatePicker, setShowFromDatePicker] = useState(false);
+  const [showToDatePicker, setShowToDatePicker] = useState(false);
+  const [fromDate, setFromDate] = useState(new Date());
+  const [toDate, setToDate] = useState(new Date());
   const [rollNoFilter, setRollNoFilter] = useState('');
   const navigation = useNavigation();
 
@@ -19,50 +24,49 @@ const ViewComplaintsScreen = () => {
     fetchComplaints();
   }, []);
 
-const fetchComplaints = async () => {
-  try {
-    const adminId = auth().currentUser.uid;
-    const adminRef = firestore().collection('admins').doc(adminId);
-    const adminDoc = await adminRef.get();
-    const adminData = adminDoc.data();
-    const hostel = adminData.hostel;
-    const allComplaints = [];
+  const fetchComplaints = async () => {
+    try {
+      const adminId = auth().currentUser.uid;
+      const adminRef = firestore().collection('admins').doc(adminId);
+      const adminDoc = await adminRef.get();
+      const adminData = adminDoc.data();
+      const hostel = adminData.hostel;
+      const allComplaints = [];
 
-    const usersRef = firestore().collection('users').where('hostelName', '==', hostel);
-    usersRef.get().then(querySnapshot => {
-      const userPromises = [];
-      querySnapshot.forEach(userDoc => {
-        const userId = userDoc.id;
-        const complaintsRef = firestore().collection(`users/${userId}/complaints`);
-        const userPromise = complaintsRef.get().then(complaintsSnapshot => {
-          const userComplaints = complaintsSnapshot.docs.map(doc => {
-            const complaintData = doc.data();
-            return {
-              id: doc.id,
-              ...complaintData,
-              complaintUserId: userId,
-              userName: userDoc.data().name,
-              userRollNo: userDoc.data().rollNo,
-            };
+      const usersRef = firestore().collection('users').where('hostelName', '==', hostel);
+      usersRef.get().then(querySnapshot => {
+        const userPromises = [];
+        querySnapshot.forEach(userDoc => {
+          const userId = userDoc.id;
+          const complaintsRef = firestore().collection(`users/${userId}/complaints`);
+          const userPromise = complaintsRef.get().then(complaintsSnapshot => {
+            const userComplaints = complaintsSnapshot.docs.map(doc => {
+              const complaintData = doc.data();
+              return {
+                id: doc.id,
+                ...complaintData,
+                complaintUserId: userId,
+                userName: userDoc.data().name,
+                userRollNo: userDoc.data().rollNo,
+              };
+            });
+            allComplaints.push(...userComplaints);
           });
-          allComplaints.push(...userComplaints);
+          userPromises.push(userPromise);
         });
-        userPromises.push(userPromise);
+
+        Promise.all(userPromises).then(() => {
+          setComplaints(allComplaints);
+          applyFilters(allComplaints);
+        });
+      }).catch(error => {
+        console.error('Error fetching users: ', error);
       });
 
-      Promise.all(userPromises).then(() => {
-        setComplaints(allComplaints);
-        applyFilters(allComplaints);
-      });
-    }).catch(error => {
-      console.error('Error fetching users: ', error);
-    });
-
-  } catch (error) {
-    console.error('Error fetching complaints: ', error);
-  }
-};
-
+    } catch (error) {
+      console.error('Error fetching complaints: ', error);
+    }
+  };
 
   const handleUpdateStatus = (complaintId, userId) => {
     Alert.alert(
@@ -92,41 +96,42 @@ const fetchComplaints = async () => {
     }
   };
 
-
   const handleViewFullComplaint = (complaint) => {
     navigation.navigate('FullComplaint', { complaint });
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.complaintItem}>
-      <Text>Name: {item.userName}</Text>
-      <Text>Roll No: {item.userRollNo}</Text>
-      <Text>Date: {item.createdAt}</Text>
-      <Text>Type: {item.type}</Text>
-      <Text>Status: {item.status}</Text>
-      {item.status !== 'done' ? (
-            <TouchableOpacity
-              style={styles.updateButton}
-              onPress={() => handleUpdateStatus(item.id, item.complaintUserId)}
-            >
-              <Text style={styles.buttonText}>Mark as Done</Text>
-            </TouchableOpacity>
-          ) : null}
-      <TouchableOpacity
-        style={styles.viewFullButton}
-        onPress={() => handleViewFullComplaint(item)}
-      >
-        <Text style={styles.buttonText}>View Full Complaint</Text>
-      </TouchableOpacity>
+      <Text style={styles.complaintText}>Name: {item.userName}</Text>
+      <Text style={styles.complaintText}>Roll No: {item.userRollNo}</Text>
+      <Text style={styles.complaintText}>Date: {item.createdAt}</Text>
+      <Text style={styles.complaintText}>Type: {item.type}</Text>
+      <Text style={styles.complaintText}>Status: {item.status}</Text>
+      <View style={styles.buttonContainer}>
+              {item.status !== 'done' ? (
+                <TouchableOpacity
+                  style={[styles.button, styles.updateButton]}
+                  onPress={() => handleUpdateStatus(item.id)}
+                >
+                  <Text style={styles.buttonText}>Mark as Done</Text>
+                </TouchableOpacity>
+              ) : null}
+              <TouchableOpacity
+                style={[styles.button, styles.viewFullButton]}
+                onPress={() => handleViewFullComplaint(item)}
+              >
+                <Text style={styles.buttonText}>View Full Complaint</Text>
+              </TouchableOpacity>
+      </View>
     </View>
   );
 
   const applyFilters = (data) => {
     let filteredData = [...data];
-    if (filterOptions.type !== 'None') {
+    if (filterOptions.type !== 'Select Type') {
       filteredData = filteredData.filter(complaint => complaint.type === filterOptions.type);
     }
-    if (filterOptions.status !== 'None') {
+    if (filterOptions.status !== 'Select Status') {
       filteredData = filteredData.filter(complaint => complaint.status === filterOptions.status);
     }
     if (rollNoFilter !== '') {
@@ -137,13 +142,10 @@ const fetchComplaints = async () => {
 
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
-        Complaints from Your Hostel
-      </Text>
-      <View style={{ marginBottom: 20 }}>
-        {/* Type Filter */}
+      <Text style={styles.header}>Complaints from Your Hostel</Text>
+      <View style={styles.filterContainer}>
         <Picker
-          style={styles.inputBox}
+          style={[styles.picker, {color: '#FFFFFF'}]} // Set color to white
           selectedValue={filterOptions.type}
           onValueChange={(value) => setFilterOptions({ ...filterOptions, type: value })}
         >
@@ -151,10 +153,8 @@ const fetchComplaints = async () => {
             <Picker.Item key={index} label={type} value={type} />
           ))}
         </Picker>
-
-        {/* Status Filter */}
         <Picker
-          style={styles.inputBox}
+          style={[styles.picker, {color: '#FFFFFF'}]} // Set color to white
           selectedValue={filterOptions.status}
           onValueChange={(value) => setFilterOptions({ ...filterOptions, status: value })}
         >
@@ -162,23 +162,21 @@ const fetchComplaints = async () => {
             <Picker.Item key={index} label={status} value={status} />
           ))}
         </Picker>
-
-        {/* Roll No Filter */}
         <TextInput
-          style={styles.inputBox}
-          placeholder="Enter Roll No"
+          style={styles.input}
+          placeholder="Enter Roll Number"
+          placeholderTextColor="#FFFFFF"
           value={rollNoFilter}
           onChangeText={(value) => setRollNoFilter(value)}
         />
 
         <TouchableOpacity
-          style={styles.applyFiltersButton}
+          style={styles.applyButton}
           onPress={() => applyFilters(complaints)}
         >
-          <Text style={styles.buttonText}>Apply filter</Text>
+          <Text style={styles.buttonText}>Apply Filter</Text>
         </TouchableOpacity>
       </View>
-
       <FlatList
         data={filteredComplaints}
         renderItem={renderItem}
@@ -191,7 +189,41 @@ const fetchComplaints = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#212121',
     padding: 20,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  filterContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  picker: {
+    backgroundColor: '#424242',
+    color: '#FFFFFF',
+    borderRadius: 5,
+    marginBottom: 10,
+    width: '100%',
+  },
+  input: {
+    backgroundColor: '#424242',
+    color: '#FFFFFF',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    width: '100%',
+  },
+  applyButton: {
+    backgroundColor: '#960067',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    width: '50%',
   },
   complaintItem: {
     borderWidth: 1,
@@ -200,38 +232,35 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
+  complaintText: {
+    color: '#FFFFFF',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   updateButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#009688',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
+    flex: 1,
+    marginRight: 5,
   },
   viewFullButton: {
-    backgroundColor: 'green',
+    backgroundColor: '#009688',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
-  },
-  applyFiltersButton: {
-    backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 30
+    flex: 1,
+    marginLeft: 5,
   },
   buttonText: {
-    color: 'white',
+    color: '#FFFFFF',
     fontWeight: 'bold',
-  },
-  inputBox: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
   },
 });
 

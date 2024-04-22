@@ -71,16 +71,18 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <StatusBar hidden={true} />
       <View>
-        <Text style={{ textAlign: 'center', fontSize: 20, fontWeight: 'bold' }}>Login</Text>
+        <Text style={{ textAlign: 'center', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>Login</Text>
         <TextInput
           style={styles.inputBox}
           placeholder="Enter Your Email"
+          placeholderTextColor="#F5F5F5"
           value={email}
           onChangeText={value => setEmail(value)}
         />
         <TextInput
           style={styles.inputBox}
           placeholder="Enter Your Password"
+          placeholderTextColor="#F5F5F5"
           value={password}
           onChangeText={value => setPassword(value)}
           secureTextEntry={true}
@@ -89,15 +91,15 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => adminLogin()}>
-          <Text style={{ color: '#fff' }}>Login</Text>
+          <Text style={{ color: '#FFFFFF' }}>Login</Text>
         </TouchableOpacity>
 
-        <Text>{message}</Text>
+        <Text style={{ color: '#FFFFFF' }}>{message}</Text>
 
         <TouchableOpacity
           style={styles.signup}
           onPress={() => { navigation.navigate('Signup'); }}>
-          <Text style={{ color: 'blue' }}>New User Signup ?</Text>
+          <Text style={{ color: '#009688' }}>New User Signup ?</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -111,19 +113,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#212121', // Dark background color
   },
   inputBox: {
     width: width - 30,
     borderRadius: 15,
-    borderWidth: 2,
+    borderWidth: 1,
+    borderColor: '#FFFFFF', // White border color
     marginVertical: 10,
     padding: 10,
+    color: '#FFFFFF', // White text color
   },
   addButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#009688', // Button color
     alignItems: 'center',
-    padding: 10,
-    borderRadius: 50,
+    padding: 15,
+    borderRadius: 25, // Reduced border radius
+    marginTop: 10,
   },
   signup: {
     alignItems: 'center',

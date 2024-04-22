@@ -10,22 +10,22 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Student Dashboard</Text>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#2196F3' }]}
+        style={[styles.button, { backgroundColor: '#009688' }]}
         onPress={() => navigation.navigate('AddComplaint')}>
         <Text style={styles.buttonText}>Add Complaint</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#4CAF50' }]}
+        style={[styles.button, { backgroundColor: '#009688' }]}
         onPress={() => navigation.navigate('ReviewComplaint')}>
         <Text style={styles.buttonText}>Review Complaint</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#FFC107' }]}
+        style={[styles.button, { backgroundColor: '#009688' }]}
         onPress={() => navigation.navigate('UpdateProfile')}>
         <Text style={styles.buttonText}>Update Profile</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#F44336',width: '30%' }]}
+        style={[styles.button, { backgroundColor: '#960067',width: '30%' }]}
         onPress={async () => {
           await Auth().signOut();
           navigation.dispatch(StackActions.popToTop());

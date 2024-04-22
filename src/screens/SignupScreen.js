@@ -100,65 +100,71 @@ export default function SignupScreen() {
     <View style={styles.container}>
       <StatusBar hidden={true} />
       <View>
-        <Text style={{textAlign: 'center', fontSize: 20, fontWeight: 'bold'}}>
+        <Text style={{textAlign: 'center', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF'}}>
           HOCMAN
         </Text>
         <TextInput
-                  style={styles.inputBox}
+                  style={[styles.inputBox, {color: '#FFFFFF'}]}
                   placeholder="Enter Your Email"
+                  placeholderTextColor="#FFFFFF"
                   value={email}
                   onChangeText={value => setEmail(value)}
         />
         <TextInput
-                  style={styles.inputBox}
+                  style={[styles.inputBox, {color: '#FFFFFF'}]}
                   placeholder="Enter Your Password"
+                  placeholderTextColor="#FFFFFF"
                   value={password}
                   onChangeText={value => setPassword(value)}
                   secureTextEntry={true}
         />
         <TextInput
-                  style={styles.inputBox}
+                  style={[styles.inputBox, {color: '#FFFFFF'}]}
                   placeholder="Enter Your name"
+                  placeholderTextColor="#FFFFFF"
                   value={name}
                   onChangeText={value => setName(value)}
         />
         <TextInput
-                  style={styles.inputBox}
+                  style={[styles.inputBox, {color: '#FFFFFF'}]}
                   placeholder="Enter Your rollNo"
+                  placeholderTextColor="#FFFFFF"
                   value={rollNo}
                   onChangeText={value => setRollNo(value)}
         />
         <Picker
           selectedValue={hostelName}
-          onValueChange={(itemValue) =>
-            setHostelName(itemValue)
-          }
-          >
+          onValueChange={(itemValue) => setHostelName(itemValue)}
+          style={[styles.inputBox, styles.picker]}
+          mode="dropdown" // Render as dropdown
+          dropdownIconColor="#FFFFFF" // Set dropdown arrow color to white
+        >
           <Picker.Item label="Select Hostel" value=""/>
           {hostels.map((hostel, index) => (
-                            <Picker.Item key={index} label={hostel.label} value={hostel.value} />
-                          ))}
+            <Picker.Item key={index} label={hostel.label} value={hostel.value} />
+          ))}
         </Picker>
         <TextInput
-                  style={styles.inputBox}
+                  style={[styles.inputBox, {color: '#FFFFFF'}]}
                   placeholder="Enter Your roomNo"
+                  placeholderTextColor="#FFFFFF"
                   value={roomNo}
                   onChangeText={value => setRoomNo(value)}
         />
         <TouchableOpacity
-          style={styles.addButton}
+          style={[styles.addButton, {borderColor: '#FFFFFF', marginTop: 20}]}
           onPress={() => handleSignup()}>
           <Text style={{color: '#fff'}}>Signup</Text>
         </TouchableOpacity>
 
-        <Text>{message}</Text>
+        <Text style={{color: '#FFFFFF'}}>{message}</Text>
 
         <TouchableOpacity
           style={styles.signup}
           onPress={() => {
             navigation.navigate('Login');
           }}>
-          <Text style={{color: 'blue'}}>Already Have An Account ?</Text>
+          <Text style={{color: '#009688'}}>Already Have An Account ?</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -172,21 +178,32 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#212121', // Dark background color
   },
   inputBox: {
     width: width - 30,
     borderRadius: 15,
-    borderWidth: 2,
+    borderWidth: 1,
     marginVertical: 10,
     padding: 10,
+    borderColor: '#FFFFFF'
   },
   addButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#009688',
     alignItems: 'center',
-    padding: 10,
+    paddingVertical: 10, // Reduce vertical padding
+    paddingHorizontal: 20, // Reduce horizontal padding
     borderRadius: 50,
+    borderColor: '#FFFFFF', // Button border color
+    marginTop: 20, // Move button down
   },
   signup: {
     alignItems: 'center',
   },
+  picker: {
+    borderColor: '#FFFFFF', // Add white border to the picker
+    color: '#FFFFFF',
+    backgroundColor: '#212121'
+  }
+
 });

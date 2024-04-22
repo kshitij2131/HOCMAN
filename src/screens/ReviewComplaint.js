@@ -6,8 +6,8 @@ import auth from '@react-native-firebase/auth';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import firestore from '@react-native-firebase/firestore';
 
-const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others', 'None'];
-const statuses = ['done', 'pending', 'None'];
+const types = ['Select Type', 'AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others'];
+const statuses = ['Select Status', 'done', 'pending'];
 
 const ViewComplaintsScreen = () => {
   const navigation = useNavigation();
@@ -17,8 +17,8 @@ const ViewComplaintsScreen = () => {
   const [filterOptions, setFilterOptions] = useState({
     fromDate: new Date(2024, 3, 1),
     toDate: new Date(),
-    type: 'None',
-    status: 'None'
+    type: 'Select Type',
+    status: 'Select Status'
   });
   const [showFromDatePicker, setShowFromDatePicker] = useState(false);
   const [showToDatePicker, setShowToDatePicker] = useState(false);
@@ -75,16 +75,14 @@ const ViewComplaintsScreen = () => {
 
   const applyFilters = (data) => {
     let filteredData = [...data];
-    if (filterOptions.type !== 'None') {
+    if (filterOptions.type !== 'Select Type') {
       filteredData = filteredData.filter(complaint => complaint.type === filterOptions.type);
     }
-    if (filterOptions.status !== 'None') {
+    if (filterOptions.status !== 'Select Status') {
       filteredData = filteredData.filter(complaint => complaint.status === filterOptions.status);
     }
     filteredData = filteredData.filter(complaint => {
       const complaintDate = new Date(complaint.createdAt);
-      console.log(filterOptions.toDate);
-      console.log(filterOptions.fromDate);
       return complaintDate >= filterOptions.fromDate && complaintDate <= filterOptions.toDate;
     });
     setFilteredComplaints(filteredData);
@@ -101,34 +99,37 @@ const ViewComplaintsScreen = () => {
     setShowToDatePicker(false);
     setFilterOptions({ ...filterOptions, toDate: currentDate });
   };
-    const renderItem = ({ item }) => (
-      <View style={styles.complaintItem}>
-        <Text>Date: {item.createdAt}</Text>
-        <Text>Type: {item.type}</Text>
-        <Text>Status: {item.status}</Text>
+
+  const renderItem = ({ item }) => (
+    <View style={styles.complaintItem}>
+      <Text style={styles.text}>Date: {item.createdAt}</Text>
+      <Text style={styles.text}>Type: {item.type}</Text>
+      <Text style={styles.text}>Status: {item.status}</Text>
+      <View style={styles.buttonContainer}>
         {item.status !== 'done' ? (
           <TouchableOpacity
-            style={styles.updateButton}
+            style={[styles.button, styles.updateButton]}
             onPress={() => handleUpdateStatus(item.id)}
           >
             <Text style={styles.buttonText}>Mark as Done</Text>
           </TouchableOpacity>
         ) : null}
         <TouchableOpacity
-          style={styles.viewFullButton}
+          style={[styles.button, styles.viewFullButton]}
           onPress={() => handleViewFullComplaint(item)}
         >
           <Text style={styles.buttonText}>View Full Complaint</Text>
         </TouchableOpacity>
       </View>
-    );
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Your Complaints</Text>
-      <View>
-        {/* Type Filter */}
+      <Text style={styles.header}>Your Complaints</Text>
+      <View style={styles.filtersContainer}>
         <Picker
-          style={styles.inputBox}
+          style={styles.picker}
           selectedValue={filterOptions.type}
           onValueChange={(value) => setFilterOptions({ ...filterOptions, type: value })}
         >
@@ -137,9 +138,8 @@ const ViewComplaintsScreen = () => {
           ))}
         </Picker>
 
-        {/* Status Filter */}
         <Picker
-          style={styles.inputBox}
+          style={styles.picker}
           selectedValue={filterOptions.status}
           onValueChange={(value) => setFilterOptions({ ...filterOptions, status: value })}
         >
@@ -147,13 +147,15 @@ const ViewComplaintsScreen = () => {
             <Picker.Item key={index} label={status} value={status} />
           ))}
         </Picker>
+      </View>
 
-        {/* From Date Picker */}
+      <Text style={styles.timePeriodText}>Select Time Period</Text>
+      <View style={styles.dateContainer}>
         <TouchableOpacity
           style={styles.datePickerButton}
           onPress={() => setShowFromDatePicker(true)}
         >
-          <Text>{`From Date: ${filterOptions.fromDate.toLocaleDateString()}`}</Text>
+          <Text style={styles.dateText}>{`From: ${filterOptions.fromDate.toLocaleDateString()}`}</Text>
         </TouchableOpacity>
         {showFromDatePicker && (
           <DateTimePicker
@@ -164,12 +166,11 @@ const ViewComplaintsScreen = () => {
           />
         )}
 
-        {/* To Date Picker */}
         <TouchableOpacity
           style={styles.datePickerButton}
           onPress={() => setShowToDatePicker(true)}
         >
-          <Text>{`To Date: ${filterOptions.toDate.toLocaleDateString()}`}</Text>
+          <Text style={styles.dateText}>{`To: ${filterOptions.toDate.toLocaleDateString()}`}</Text>
         </TouchableOpacity>
         {showToDatePicker && (
           <DateTimePicker
@@ -179,14 +180,14 @@ const ViewComplaintsScreen = () => {
             onChange={handleToDateChange}
           />
         )}
-
-        <TouchableOpacity
-          style={styles.applyFiltersButton}
-          onPress={() => applyFilters(complaints)}
-        >
-          <Text style={styles.buttonText}>Apply filter</Text>
-        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        style={styles.applyFiltersButton}
+        onPress={() => applyFilters(complaints)}
+      >
+        <Text style={styles.buttonText}>Apply Filter</Text>
+      </TouchableOpacity>
 
       <FlatList
         data={filteredComplaints}
@@ -201,6 +202,52 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: '#212121', // Dark background color
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF', // White text color
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  filtersContainer: {
+    marginBottom: 20,
+  },
+  picker: {
+    backgroundColor: '#424242', // Dark gray background color
+    color: '#FFFFFF', // White text color
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  datePickerButton: {
+    backgroundColor: '#424242', // Dark gray background color
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 5,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  timePeriodText: {
+    color: '#FFFFFF', // White text color
+    marginBottom: 10,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  applyFiltersButton: {
+    backgroundColor: '#960067', // Red button color
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: '40%',
+    marginBottom: 30,
   },
   complaintItem: {
     borderWidth: 1,
@@ -210,45 +257,36 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   updateButton: {
-    backgroundColor: 'blue',
+    backgroundColor: '#009688', // Blue button color
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
   },
   viewFullButton: {
-    backgroundColor: 'green',
+    backgroundColor: '#009688', // Green button color
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
-  },
-  applyFiltersButton: {
-    backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 30
   },
   buttonText: {
-    color: 'white',
+    color: '#FFFFFF', // White text color
     fontWeight: 'bold',
   },
-  inputBox: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
+  text: {
+    color: '#FFFFFF', // White text color
   },
-  datePickerButton: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    alignItems: 'center',
+  dateText: {
+    color: '#FFFFFF', // White text color
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 5,
   },
 });
 
