@@ -9,6 +9,8 @@ import firestore from '@react-native-firebase/firestore';
 const types = ['Select Type', 'AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others'];
 const statuses = ['Select Status', 'done', 'pending'];
 
+desc_prefix_len = 15;
+
 const ViewComplaintsScreen = () => {
   const navigation = useNavigation();
 
@@ -100,10 +102,16 @@ const ViewComplaintsScreen = () => {
     setFilterOptions({ ...filterOptions, toDate: currentDate });
   };
 
-  const renderItem = ({ item }) => (
+const renderItem = ({ item }) => {
+  const truncatedDescription = item.description.length > 15
+    ? `${item.description.substring(0, 15)}..[${item.description.length} chars]`
+    : item.description;
+
+  return (
     <View style={styles.complaintItem}>
       <Text style={styles.text}>Date: {item.createdAt}</Text>
       <Text style={styles.text}>Type: {item.type}</Text>
+      <Text style={styles.text}>Description: {truncatedDescription}</Text>
       <Text style={styles.text}>Status: {item.status}</Text>
       <View style={styles.buttonContainer}>
         {item.status !== 'done' ? (
@@ -123,6 +131,8 @@ const ViewComplaintsScreen = () => {
       </View>
     </View>
   );
+};
+
 
   return (
     <View style={styles.container}>

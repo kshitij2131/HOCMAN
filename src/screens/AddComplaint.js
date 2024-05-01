@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DocumentPicker from 'react-native-document-picker';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import { useNavigation, StackActions } from '@react-navigation/native';
 
 const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others'];
 
 const AddComplaintScreen = () => {
+  const navigation = useNavigation();
+
+
   const [type, setType] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
@@ -16,6 +20,17 @@ const AddComplaintScreen = () => {
   const [imageData, setImageData] = useState('');
   const [fullImgRefPath, setFullImgRefPath] = useState('');
   const [imgDownloadUrl, setImgDownloadUrl] = useState('');
+  const [newUrl, setNewUrl] = useState('')
+
+//  useEffect(() => {
+//    console.log(imgDownloadUrl);
+//  }, [imgDownloadUrl]);
+
+    function wait(ms) {
+      return new Promise(resolve => {
+        setTimeout(resolve, ms);
+      });
+    }
 
   const handlePickImage = async () => {
     try {
@@ -43,15 +58,24 @@ const AddComplaintScreen = () => {
 
           setFullImgRefPath(put.metadata.fullPath);
           const url = await response.getDownloadURL();
-
-          setImgDownloadUrl(url);
+          console.log(url)
+          setNewUrl(url);
+          await wait(3000);
+//          await setImgDownloadUrl(url);
+//          console.log(imgDownloadUrl);
+          console.log(newUrl);
           Alert.alert('Success', 'Image Uploaded Successfully');
         } catch (err) {
           console.log(err);
         }
       };
 
-      uploadImage();
+      await uploadImage();
+
+      console.log("yes shyd upload ho gyi hai");
+      console.log(newUrl);
+
+
 
       const userId = auth().currentUser.uid;
       const currentDate = new Date().toISOString();
@@ -60,7 +84,7 @@ const AddComplaintScreen = () => {
         type,
         location,
         description,
-        imgDownloadUrl,
+        newUrl,
         status: 'pending',
         userId,
         createdAt: currentDate,
@@ -71,6 +95,7 @@ const AddComplaintScreen = () => {
       setLocation('');
       setDescription('');
       setImageUri('');
+      navigation.navigate('Home');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -165,7 +190,7 @@ const styles = StyleSheet.create({
 export default AddComplaintScreen;
 
 
-
+//
 //import React, { useState } from 'react';
 //import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 //import { Picker } from '@react-native-picker/picker';
