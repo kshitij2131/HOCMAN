@@ -27,6 +27,11 @@ const AddComplaintScreen = () => {
   const [fullImgRefPath, setFullImgRefPath] = useState('');
   const [imgDownloadUrl, setImgDownloadUrl] = useState('');
 
+  useEffect(() => {
+    console.log(imgDownloadUrl);
+  }, [imgDownloadUrl]);
+
+
 
 
   const handlePickImage = async () => {
@@ -56,7 +61,9 @@ const AddComplaintScreen = () => {
           setFullImgRefPath(put.metadata.fullPath);
           const url = await response.getDownloadURL();
           console.log("this is url :"+url);
+
           setImgDownloadUrl(url);
+
           console.log("this is imgDownloadUrl :"+imgDownloadUrl);
 //           await wait(3000);
           Alert.alert('Success', 'Image Uploaded Successfully');
@@ -89,7 +96,8 @@ const AddComplaintScreen = () => {
       setType('');
       setLocation('');
       setDescription('');
-      setImageUri('');
+//      setImageUri('');
+      setImgDownloadUrl('');
       navigation.navigate('Home');
     } catch (error) {
       Alert.alert('Error', error.message);
