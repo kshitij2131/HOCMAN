@@ -9,6 +9,12 @@ import { useNavigation, StackActions } from '@react-navigation/native';
 
 const types = ['AC', 'Fan', 'Tubelight', 'Furniture', 'Watercooler', 'Geyser', 'Construction', 'Equipments', 'Others'];
 
+//function wait(ms) {
+//      return new Promise(resolve => {
+//        setTimeout(resolve, ms);
+//      });
+//    }
+
 const AddComplaintScreen = () => {
   const navigation = useNavigation();
 
@@ -20,17 +26,13 @@ const AddComplaintScreen = () => {
   const [imageData, setImageData] = useState('');
   const [fullImgRefPath, setFullImgRefPath] = useState('');
   const [imgDownloadUrl, setImgDownloadUrl] = useState('');
-  const [newUrl, setNewUrl] = useState('')
 
-//  useEffect(() => {
-//    console.log(imgDownloadUrl);
-//  }, [imgDownloadUrl]);
+  useEffect(() => {
+    console.log(imgDownloadUrl);
+  }, [imgDownloadUrl]);
 
-    function wait(ms) {
-      return new Promise(resolve => {
-        setTimeout(resolve, ms);
-      });
-    }
+
+
 
   const handlePickImage = async () => {
     try {
@@ -58,22 +60,22 @@ const AddComplaintScreen = () => {
 
           setFullImgRefPath(put.metadata.fullPath);
           const url = await response.getDownloadURL();
-          console.log(url)
-          setNewUrl(url);
-          await wait(3000);
-//          await setImgDownloadUrl(url);
-//          console.log(imgDownloadUrl);
-          console.log(newUrl);
+          console.log("this is url :"+url);
+
+          setImgDownloadUrl(url);
+
+          console.log("this is imgDownloadUrl :"+imgDownloadUrl);
+//           await wait(3000);
           Alert.alert('Success', 'Image Uploaded Successfully');
         } catch (err) {
           console.log(err);
         }
       };
 
-      await uploadImage();
+      uploadImage();
 
-      console.log("yes shyd upload ho gyi hai");
-      console.log(newUrl);
+//      console.log("yes shyd upload ho gyi hai");
+//      console.log(imgDownloadUrl);
 
 
 
@@ -84,7 +86,7 @@ const AddComplaintScreen = () => {
         type,
         location,
         description,
-        newUrl,
+        imgDownloadUrl,
         status: 'pending',
         userId,
         createdAt: currentDate,
@@ -94,7 +96,8 @@ const AddComplaintScreen = () => {
       setType('');
       setLocation('');
       setDescription('');
-      setImageUri('');
+//      setImageUri('');
+      setImgDownloadUrl('');
       navigation.navigate('Home');
     } catch (error) {
       Alert.alert('Error', error.message);
