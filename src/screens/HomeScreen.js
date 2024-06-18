@@ -1,3 +1,4 @@
+//...g
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Auth from '@react-native-firebase/auth';
